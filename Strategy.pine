@@ -1,0 +1,30 @@
+// Define the function to calculate True Range
+study("Custom True Range")
+function TrueRange(h,l,pc) {
+    return max(h - l, h - pc, pc - l)
+}
+
+// Define the function to calculate Supertrend
+study("Supertrend Indicator")
+length = input(title="Length", type=integer, defval=14)
+mult = input(title="Multiplier", type=float, defval=3)
+
+// Calculate average true range
+atr = sma(TrueRange(high, low, close[1]), length)
+
+// Calculate upper and lower band
+uper = hhv(high, length) - mult * atr
+lwr = llv(low, length) + mult * atr
+
+// Define the supertrend line
+superTrend = (close > uper ? uper : (close < lwr ? lwr : nz(superTrend[1])))
+
+// Buy signal
+buy = crossover(close, sma(close, 21)) and superTrend < close
+
+// Sell signal
+sell = superTrend > close or (close - close[1]) / close[1] * 100 < -7
+
+// Plot the signals
+plotshape(buy, location=location.bottom, style=shape.arrowup, size=size.tiny, color=color.green, text="Buy")
+plotshape(sell, location=location.bottom, style=shape.arrowdown, size=size.tiny, color=color.red, text="Sell")
